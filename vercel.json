@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd client && yarn install && ./node_modules/vite/bin/vite.js build",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}
