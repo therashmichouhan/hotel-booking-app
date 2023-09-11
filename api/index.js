@@ -62,13 +62,13 @@ function getUserDataFromReq(req) {
   });
 }
 
-app.get("/test", (req, res) => {
+app.get("/api/test", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   res.json("tesk ok");
 });
 
 // first API
-app.post("/register", async (req, res) => {
+app.post("/api/register", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { name, email, password } = req.body;
   const isEmailPresent = await User.findOne({ email });
@@ -90,7 +90,7 @@ app.post("/register", async (req, res) => {
 });
 
 // second Api
-app.post("/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { email, password } = req.body;
   const userDoc = await User.findOne({ email });
@@ -116,7 +116,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Third API
-app.get("/profile", (req, res) => {
+app.get("/api/profile", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   if (token) {
@@ -131,7 +131,7 @@ app.get("/profile", (req, res) => {
 });
 
 // Fourth API
-app.post("/logout", (req, res) => {
+app.post("/api/logout", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   res.cookie("token", "").json(true);
 });
@@ -156,19 +156,23 @@ app.post("/upload-by-link", async (req, res) => {
 // Sixth API
 
 const photosMiddleware = multer({ dest: "/tmp" });
-app.post("/upload", photosMiddleware.array("photos", 100), async (req, res) => {
-  mongoose.connect(process.env.MONGO_URL);
-  const uploadedFiles = [];
-  for (let i = 0; i < req.files.length; i++) {
-    const { path, originalname, mimetype } = req.files[i];
-    const url = await uploadToS3(path, originalname, mimetype);
-    uploadedFiles.push(url);
+app.post(
+  "/api/upload",
+  photosMiddleware.array("photos", 100),
+  async (req, res) => {
+    mongoose.connect(process.env.MONGO_URL);
+    const uploadedFiles = [];
+    for (let i = 0; i < req.files.length; i++) {
+      const { path, originalname, mimetype } = req.files[i];
+      const url = await uploadToS3(path, originalname, mimetype);
+      uploadedFiles.push(url);
+    }
+    res.json(uploadedFiles);
   }
-  res.json(uploadedFiles);
-});
+);
 
 // Seventh API
-app.post("/places", async (req, res) => {
+app.post("/api/places", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   const {
@@ -204,7 +208,7 @@ app.post("/places", async (req, res) => {
 });
 
 // Eighth API
-app.get("/user-places", (req, res) => {
+app.get("/api/user-places", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
@@ -214,14 +218,14 @@ app.get("/user-places", (req, res) => {
 });
 
 // Ninth API
-app.get("/places/:id", async (req, res) => {
+app.get("/api/places/:id", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { id } = req.params;
   res.json(await Place.findById(id));
 });
 
 // Tenth API
-app.put("/places", async (req, res) => {
+app.put("/api/places", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   const {
@@ -260,13 +264,13 @@ app.put("/places", async (req, res) => {
 });
 
 // Eleventh API
-app.get("/places", async (req, res) => {
+app.get("/api/places", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   res.json(await Place.find());
 });
 
 //  Twelfth API
-app.post("/bookings", async (req, res) => {
+app.post("/api/bookings", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const userData = await getUserDataFromReq(req);
   const { place, checkIn, checkOut, numberOfGuests, name, phone, price } =
@@ -290,7 +294,7 @@ app.post("/bookings", async (req, res) => {
 });
 
 // thirteenth API
-app.get("/bookings", async (req, res) => {
+app.get("/api/bookings", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const userData = await getUserDataFromReq(req);
   res.json(await Booking.find({ user: userData.id }).populate("place"));
