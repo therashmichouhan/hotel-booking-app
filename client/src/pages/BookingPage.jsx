@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import LinkAddress from "../LinkAddress";
 import PlaceGallery from "../PlaceGallery";
-import BookingDates from "../BookingDates";
+import BookingDates from "../component/BookingDates";
 
 export default function BookingPage() {
   const { id } = useParams();
