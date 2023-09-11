@@ -4,4 +4,4 @@ client/node_modules
 api/.env
 api/uploads/*
 api/yarn-error.log
-client/.eslintrc.cjs
+client/.eslintrc.cjs 
