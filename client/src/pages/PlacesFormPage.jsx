@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import PhotoUploader from "../PhotoUploader";
-import Perks from "../Perks";
+import PhotoUploader from "../component/PhotoUploader";
+import Perks from "../component/Perks";
 import axios from "axios";
-import AccountNav from "../AccountNav";
+import AccountNav from "../component/AccountNav";
 import { Navigate, useParams } from "react-router-dom";
 
 const PlacesFormPage = () => {

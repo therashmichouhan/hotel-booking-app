@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
-import Image from "./Image";
+import Image from "../component/Image";
 
 const PhotoUploader = ({ addedPhotos, onChange }) => {
   const [photoLink, setPhotoLink] = useState("");

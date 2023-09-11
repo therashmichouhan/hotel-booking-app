@@ -1,8 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import LinkAddress from "../LinkAddress";
-import PlaceGallery from "../PlaceGallery";
+import LinkAddress from "../component/LinkAddress";
+import PlaceGallery from "../component/PlaceGallery";
 import BookingDates from "../component/BookingDates";
 
 export default function BookingPage() {

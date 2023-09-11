@@ -1,8 +1,8 @@
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { UserContext } from "../UserContext";
-import Image from "../Image";
+
+import Image from "../component/Image";
 
 export default function IndexPage() {
   const [places, setPlaces] = useState([]);

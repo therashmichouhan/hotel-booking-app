@@ -5,7 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import Layout from "./pages/Layout";
 import RegisterPage from "./pages/Register";
 import axios from "axios";
-import { UserContextProvider } from "./UserContext";
+import { UserContextProvider } from "./component/UserContext";
 import ProfilePage from "./pages/ProfilePage";
 import PlacesPage from "./pages/PlacesPage";
 import PlacesFormPage from "./pages/PlacesFormPage";
