@@ -30,11 +30,7 @@ export default function PlaceGallery({ place }) {
           {place?.photos?.length > 0 &&
             place.photos.map((photo) => (
               <div>
-                <img
-                  className='w-full'
-                  src={"http://localhost:4000/uploads/" + photo}
-                  alt=''
-                />
+                <Image className='w-full' src={photo} alt='' />
               </div>
             ))}
         </div>

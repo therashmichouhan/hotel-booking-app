@@ -8,7 +8,7 @@ const Place = require("./models/Place.js");
 const Booking = require("./models/Booking.js");
 const cookieParser = require("cookie-parser");
 const imageDownloader = require("image-downloader");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
 const fs = require("fs");
 const multer = require("multer");
 const mime = require("mime-types");
@@ -20,15 +20,15 @@ const bucket = "hotel-booking-app";
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "fmkojorifkoijgmogij";
 
-app.use(express.json());
 app.use(cookieParser());
+app.use(express.json());
 app.use("/uploads", express.static(__dirname + "/uploads"));
-app.use(
-  cors({
-    credentials: true,
-    origin: "http://localhost:5173",
-  })
-);
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 async function uploadToS3(path, originalFilename, mimetype) {
   const client = new S3Client({
@@ -53,15 +53,6 @@ async function uploadToS3(path, originalFilename, mimetype) {
   return `https://${bucket}.s3.amazonaws.com/${newFilename}`;
 }
 
-function getUserDataFromReq(req) {
-  return new Promise((resolve, reject) => {
-    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
-      if (err) throw err;
-      resolve(userData);
-    });
-  });
-}
-
 app.get("/api/test", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   res.json("tesk ok");
@@ -70,8 +61,8 @@ app.get("/api/test", (req, res) => {
 // first API
 app.post("/api/register", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
-  const { name, email, password } = req.body;
-  const isEmailPresent = await User.findOne({ email });
+  const {name, email, password} = req.body;
+  const isEmailPresent = await User.findOne({email});
 
   if (isEmailPresent) {
     return res.json("email already present");
@@ -92,18 +83,20 @@ app.post("/api/register", async (req, res) => {
 // second Api
 app.post("/api/login", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
-  const { email, password } = req.body;
-  const userDoc = await User.findOne({ email });
-
+  const {email, password} = req.body;
+  const userDoc = await User.findOne({email});
   if (userDoc) {
     const passOk = bcrypt.compareSync(password, userDoc.password);
     if (passOk) {
       jwt.sign(
-        { email: userDoc.email, id: userDoc._id },
+        {email: userDoc.email, id: userDoc._id},
         jwtSecret,
         {},
         (err, token) => {
-          if (err) throw err;
+          if (err) {
+            throw err;
+          }
+
           res.cookie("token", token).json(userDoc);
         }
       );
@@ -118,12 +111,12 @@ app.post("/api/login", async (req, res) => {
 // Third API
 app.get("/api/profile", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
-  const { token } = req.cookies;
+  const {token} = req.cookies;
   if (token) {
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
       if (err) throw err;
-      const { name, email, _id } = await User.findById(userData.id);
-      res.json({ name, email, _id });
+      const {name, email, _id} = await User.findById(userData.id);
+      res.json({name, email, _id});
     });
   } else {
     res.json(null);
@@ -137,8 +130,7 @@ app.post("/api/logout", (req, res) => {
 });
 
 // Fifth API
-app.post("/upload-by-link", async (req, res) => {
-  mongoose.connect(process.env.MONGO_URL);
+app.post("/api/upload-by-link", async (req, res) => {
   const { link } = req.body;
   const newName = "photo" + Date.now() + ".jpg";
   await imageDownloader.image({
@@ -146,7 +138,7 @@ app.post("/upload-by-link", async (req, res) => {
     dest: "/tmp/" + newName,
   });
   const url = await uploadToS3(
-    "/tmp/ " + newName,
+    "/tmp/" + newName,
     newName,
     mime.lookup("/tmp/" + newName)
   );
@@ -155,7 +147,7 @@ app.post("/upload-by-link", async (req, res) => {
 
 // Sixth API
 
-const photosMiddleware = multer({ dest: "/tmp" });
+const photosMiddleware = multer({dest: "/tmp"});
 app.post(
   "/api/upload",
   photosMiddleware.array("photos", 100),
@@ -163,7 +155,7 @@ app.post(
     mongoose.connect(process.env.MONGO_URL);
     const uploadedFiles = [];
     for (let i = 0; i < req.files.length; i++) {
-      const { path, originalname, mimetype } = req.files[i];
+      const {path, originalname, mimetype} = req.files[i];
       const url = await uploadToS3(path, originalname, mimetype);
       uploadedFiles.push(url);
     }
@@ -174,7 +166,7 @@ app.post(
 // Seventh API
 app.post("/api/places", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
-  const { token } = req.cookies;
+  const {token} = req.cookies;
   const {
     title,
     address,
@@ -208,26 +200,27 @@ app.post("/api/places", async (req, res) => {
 });
 
 // Eighth API
-app.get("/api/user-places", (req, res) => {
+app.get("/api/user-places", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
-  const { token } = req.cookies;
+  const {token} = req.cookies;
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-    const { id } = userData;
-    res.json(await Place.find({ owner: id }));
+    console.log(userData);
+    const {id} = userData;
+    res.json(await Place.find({owner: id}));
   });
 });
 
 // Ninth API
 app.get("/api/places/:id", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
-  const { id } = req.params;
+  const {id} = req.params;
   res.json(await Place.findById(id));
 });
 
 // Tenth API
 app.put("/api/places", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
-  const { token } = req.cookies;
+  const {token} = req.cookies;
   const {
     id,
     title,
@@ -269,11 +262,22 @@ app.get("/api/places", async (req, res) => {
   res.json(await Place.find());
 });
 
+function getUserDataFromReq(req) {
+  return new Promise((resolve, reject) => {
+    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+      if (err) {
+        throw err;
+      }
+      resolve(userData);
+    });
+  });
+}
+
 //  Twelfth API
 app.post("/api/bookings", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const userData = await getUserDataFromReq(req);
-  const { place, checkIn, checkOut, numberOfGuests, name, phone, price } =
+  const {place, checkIn, checkOut, numberOfGuests, name, phone, price} =
     req.body;
   await Booking.create({
     place,
@@ -297,7 +301,7 @@ app.post("/api/bookings", async (req, res) => {
 app.get("/api/bookings", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const userData = await getUserDataFromReq(req);
-  res.json(await Booking.find({ user: userData.id }).populate("place"));
+  res.json(await Booking.find({user: userData.id}).populate("place"));
 });
 
 app.listen(4000);
